@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Code, Database, Globe, Server, Smartphone, Brain } from 'lucide-react';
+import { Code, Database, Globe, Server, Smartphone, Brain, Bot } from 'lucide-react';
 
 const SkillsSection = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -35,6 +35,16 @@ const SkillsSection = () => {
         { name: 'MongoDB', level: 75 },
         { name: 'AWS', level: 70 },
         { name: 'Docker', level: 75 }
+      ]
+    },
+    {
+      icon: Bot,
+      title: 'AI/ML & Data Science',
+      skills: [
+        { name: 'Machine Learning', level: 80 },
+        { name: 'Python/Pandas', level: 85 },
+        { name: 'TensorFlow/PyTorch', level: 75 },
+        { name: 'Data Analysis', level: 90 }
       ]
     },
     {
@@ -80,7 +90,7 @@ const SkillsSection = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {skillCategories.map((category, categoryIndex) => (
             <div
               key={category.title}
