@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { ChevronDown, Github, Linkedin, Mail } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 const HeroSection = () => {
   const [displayText, setDisplayText] = useState('');
@@ -53,20 +54,49 @@ const HeroSection = () => {
         }}></div>
       </div>
 
-      <div className="relative z-10 text-center max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 text-center max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="animate-fade-in">
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6">
-            <span className="text-white">Hi, I'm </span>
-            <span className="bg-gradient-to-r from-emerald-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-              John Brown Ouma
-            </span>
-          </h1>
-          
-          <div className="h-16 mb-8">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-slate-300">
-              {displayText}
-              <span className="animate-pulse text-emerald-400">|</span>
-            </h2>
+          {/* Profile Section */}
+          <div className="flex flex-col items-center mb-8">
+            <Avatar className="w-32 h-32 mb-6 ring-4 ring-emerald-400/20 ring-offset-4 ring-offset-slate-900">
+              <AvatarImage 
+                src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&h=400&fit=crop&crop=face" 
+                alt="John Brown Ouma"
+                className="object-cover"
+              />
+              <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-blue-400 text-slate-900 text-2xl font-bold">
+                JBO
+              </AvatarFallback>
+            </Avatar>
+            
+            <div className="text-center">
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6">
+                <span className="text-white">Hi, I'm </span>
+                <span className="bg-gradient-to-r from-emerald-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+                  John Brown Ouma
+                </span>
+              </h1>
+              
+              <div className="h-16 mb-8">
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-slate-300">
+                  {displayText}
+                  <span className="animate-pulse text-emerald-400">|</span>
+                </h2>
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-4 mb-8 text-sm text-slate-400">
+                <div className="flex items-center gap-2 bg-slate-800/50 px-4 py-2 rounded-full">
+                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                  <span>Available for opportunities</span>
+                </div>
+                <div className="flex items-center gap-2 bg-slate-800/50 px-4 py-2 rounded-full">
+                  <span>📍 Based in Kenya</span>
+                </div>
+                <div className="flex items-center gap-2 bg-slate-800/50 px-4 py-2 rounded-full">
+                  <span>🎓 Computer Science</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           <p className="text-xl text-slate-400 mb-12 max-w-3xl mx-auto leading-relaxed">
