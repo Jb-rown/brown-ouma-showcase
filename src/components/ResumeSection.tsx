@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Download, GraduationCap, Briefcase, Award, Calendar } from 'lucide-react';
 
@@ -10,6 +9,27 @@ const ResumeSection = () => {
       period: '2020 - 2024',
       gpa: '3.8/4.0',
       achievements: ['Dean\'s List', 'Computer Science Excellence Award', 'Research Assistant']
+    },
+    {
+      degree: 'Data and Artificial Intelligence Specialization',
+      institution: 'Cyber Shujaa',
+      period: 'May 2025 - August 2025',
+      gpa: null,
+      achievements: ['AI/ML Focus', 'Data Science Techniques']
+    },
+    {
+      degree: 'Linux and Orchestration (Kubernetes) Specialization',
+      institution: 'Andela Linux Kubernetes African Program',
+      period: 'April 2025 - February 2026',
+      gpa: null,
+      achievements: ['Linux Administration', 'Kubernetes Orchestration', 'Cloud Infrastructure']
+    },
+    {
+      degree: 'AI for Software Engineering Specialization',
+      institution: 'Power Learn Project',
+      period: 'February 2025 - August 2025',
+      gpa: null,
+      achievements: ['AI-Powered Development', 'Software Engineering Best Practices']
     }
   ];
 
@@ -87,27 +107,29 @@ const ResumeSection = () => {
                 <GraduationCap className="w-6 h-6 text-emerald-400 mr-3" />
                 <h3 className="text-2xl font-bold text-white">Education</h3>
               </div>
-              {education.map((edu, index) => (
-                <div key={index} className="border-l-4 border-emerald-500 pl-6 pb-6">
-                  <h4 className="text-xl font-semibold text-white mb-2">{edu.degree}</h4>
-                  <p className="text-emerald-400 font-medium mb-1">{edu.institution}</p>
-                  <div className="flex items-center text-slate-400 mb-2">
-                    <Calendar className="w-4 h-4 mr-1" />
-                    {edu.period}
+              <div className="space-y-6">
+                {education.map((edu, index) => (
+                  <div key={index} className="border-l-4 border-emerald-500 pl-6 pb-6">
+                    <h4 className="text-xl font-semibold text-white mb-2">{edu.degree}</h4>
+                    <p className="text-emerald-400 font-medium mb-1">{edu.institution}</p>
+                    <div className="flex items-center text-slate-400 mb-2">
+                      <Calendar className="w-4 h-4 mr-1" />
+                      {edu.period}
+                    </div>
+                    {edu.gpa && <p className="text-slate-300 mb-3">GPA: {edu.gpa}</p>}
+                    <div className="flex flex-wrap gap-2">
+                      {edu.achievements.map((achievement) => (
+                        <span
+                          key={achievement}
+                          className="px-3 py-1 bg-slate-700 text-emerald-400 text-sm rounded-full"
+                        >
+                          {achievement}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <p className="text-slate-300 mb-3">GPA: {edu.gpa}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {edu.achievements.map((achievement) => (
-                      <span
-                        key={achievement}
-                        className="px-3 py-1 bg-slate-700 text-emerald-400 text-sm rounded-full"
-                      >
-                        {achievement}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             {/* Experience */}
