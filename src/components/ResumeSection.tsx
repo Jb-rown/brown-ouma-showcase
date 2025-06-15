@@ -1,8 +1,16 @@
+
 import React from 'react';
 import { Download, GraduationCap, Briefcase, Award, Calendar } from 'lucide-react';
 
 const ResumeSection = () => {
   const education = [
+    {
+      degree: 'Bachelor of Computer Science',
+      institution: 'Technical University of Mombasa',
+      period: 'September 2021 - April 2025',
+      gpa: null,
+      achievements: ['Computer Science Focus', 'Software Engineering']
+    },
     {
       degree: 'Bachelor of Computer Science',
       institution: 'University of Technology',
