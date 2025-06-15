@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import HeroSection from '../components/HeroSection';
 import AboutSection from '../components/AboutSection';
@@ -10,6 +9,7 @@ import BlogSection from '../components/BlogSection';
 import ResumeSection from '../components/ResumeSection';
 import ContactSection from '../components/ContactSection';
 import Navigation from '../components/Navigation';
+import LiveAnalytics from '../components/LiveAnalytics';
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState('hero');
@@ -51,6 +51,7 @@ const Index = () => {
         <ResumeSection />
         <ContactSection />
       </main>
+      <LiveAnalytics />
     </div>
   );
 };
