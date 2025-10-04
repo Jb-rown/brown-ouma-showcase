@@ -60,7 +60,7 @@ const HeroSection = () => {
           <div className="flex flex-col items-center mb-8">
             <Avatar className="w-32 h-32 mb-6 ring-4 ring-emerald-400/20 ring-offset-4 ring-offset-slate-900">
               <AvatarImage 
-                src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&h=400&fit=crop&crop=face" 
+                src="/public/Profile_picture.jpg" 
                 alt="John Brown Ouma"
                 className="object-cover"
               />
@@ -121,7 +121,7 @@ const HeroSection = () => {
 
           <div className="flex justify-center space-x-6">
             <a
-              href="https://github.com"
+              href="https://github.com/Jb-rown"
               target="_blank"
               rel="noopener noreferrer"
               className="p-3 bg-slate-800 rounded-full hover:bg-slate-700 transform hover:scale-110 transition-all duration-300 group"
@@ -129,7 +129,7 @@ const HeroSection = () => {
               <Github className="w-6 h-6 text-slate-400 group-hover:text-emerald-400" />
             </a>
             <a
-              href="https://linkedin.com"
+              href="http://www.linkedin.com/in/john-brown-ouma"
               target="_blank"
               rel="noopener noreferrer"
               className="p-3 bg-slate-800 rounded-full hover:bg-slate-700 transform hover:scale-110 transition-all duration-300 group"
@@ -137,7 +137,7 @@ const HeroSection = () => {
               <Linkedin className="w-6 h-6 text-slate-400 group-hover:text-blue-400" />
             </a>
             <a
-              href="mailto:john@example.com"
+              href="mailto:brownjohn9870@gmail.com"
               className="p-3 bg-slate-800 rounded-full hover:bg-slate-700 transform hover:scale-110 transition-all duration-300 group"
             >
               <Mail className="w-6 h-6 text-slate-400 group-hover:text-purple-400" />

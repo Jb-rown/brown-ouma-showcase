@@ -12,6 +12,9 @@ const ContactSection = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  // Read Formspree form id from Vite env (set VITE_FORMSPREE_FORM_ID in your .env)
+  const FORMSPREE_ID = import.meta.env.VITE_FORMSPREE_FORM_ID as string | undefined;
+  const FORMSPREE_URL = FORMSPREE_ID ? `https://formspree.io/f/${FORMSPREE_ID}` : null;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -25,29 +28,75 @@ const ContactSection = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate form submission
-    setTimeout(() => {
+    // Basic client-side validation
+    if (!formData.name || !formData.email || !formData.message) {
       setIsSubmitting(false);
-      toast({
-        title: "Message Sent!",
-        description: "Thank you for your message. I'll get back to you soon.",
-      });
-      setFormData({ name: '', email: '', subject: '', message: '' });
-    }, 1000);
+      toast({ title: 'Missing fields', description: 'Please fill in name, email and message.' });
+      return;
+    }
+
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!emailRegex.test(formData.email)) {
+      setIsSubmitting(false);
+      toast({ title: 'Invalid email', description: 'Please provide a valid email address.' });
+      return;
+    }
+
+    // If Formspree is configured, POST the submission there
+    if (FORMSPREE_URL) {
+      try {
+        const res = await fetch(FORMSPREE_URL, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            subject: formData.subject,
+            message: formData.message
+          })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (res.ok) {
+          toast({ title: 'Message Sent!', description: "Thanks — I'll get back to you soon." });
+          setFormData({ name: '', email: '', subject: '', message: '' });
+        } else {
+          const errMsg = data?.error || data?.message || 'Failed to send message. Please try again later.';
+          toast({ title: 'Send failed', description: String(errMsg) });
+        }
+      } catch (err) {
+        console.error('Contact form send error', err);
+        toast({ title: 'Network error', description: 'Unable to send message. Check your connection.' });
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    // No server-side integration configured — provide guidance to the user
+    setIsSubmitting(false);
+    toast({
+      title: 'Form not configured',
+      description: 'Please configure a service to receive messages (Formspree or EmailJS). Quick setup: create a Formspree form and set VITE_FORMSPREE_FORM_ID in your .env, then restart the dev server.'
+    });
   };
 
   const contactInfo = [
     {
       icon: Mail,
       label: 'Email',
-      value: 'john.brown.ouma@example.com',
-      href: 'mailto:john.brown.ouma@example.com'
+      value: 'brownjohn9870@gmail.com',
+      href: 'mailto:brownjohn9870@gmail.com'
     },
     {
       icon: Phone,
       label: 'Phone',
-      value: '+254 700 000 000',
-      href: 'tel:+254700000000'
+      value: '+254 703 285 635',
+      href: 'tel:+254703285635'
     },
     {
       icon: MapPin,
@@ -61,19 +110,19 @@ const ContactSection = () => {
     {
       icon: Github,
       label: 'GitHub',
-      href: 'https://github.com',
+      href: 'https://github.com/Jb-rown',
       color: 'hover:text-slate-300'
     },
     {
       icon: Linkedin,
       label: 'LinkedIn',
-      href: 'https://linkedin.com',
+      href: 'http://www.linkedin.com/in/john-brown-ouma',
       color: 'hover:text-blue-400'
     },
     {
       icon: Twitter,
       label: 'Twitter',
-      href: 'https://twitter.com',
+      href: 'https://x.com/JohnBro11355112',
       color: 'hover:text-blue-400'
     }
   ];
