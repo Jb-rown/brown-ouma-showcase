@@ -26,7 +26,7 @@ const LabChallengesSection: React.FC = () => {
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
 
-  const challenges: Challenge[] = [
+  const DEFAULT_CHALLENGES: Challenge[] = [
     {
       id: 1,
       title: 'Distributed Cache System',
@@ -84,6 +84,55 @@ const LabChallengesSection: React.FC = () => {
       link: ''
     }
   ];
+
+  const [challenges, setChallenges] = useState<Challenge[]>(() => {
+    try {
+      const raw = localStorage.getItem('labChallenges_v1');
+      return raw ? JSON.parse(raw) as Challenge[] : DEFAULT_CHALLENGES;
+    } catch (e) {
+      return DEFAULT_CHALLENGES;
+    }
+  });
+
+  // persist challenges when changed
+  useEffect(() => {
+    try {
+      localStorage.setItem('labChallenges_v1', JSON.stringify(challenges));
+    } catch (e) {
+      // ignore
+    }
+  }, [challenges]);
+
+  // controls for add form
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newDifficulty, setNewDifficulty] = useState<'Easy'|'Medium'|'Hard'|'Other'>('Easy');
+  const [newDescription, setNewDescription] = useState('');
+  const [newTechnologies, setNewTechnologies] = useState('');
+  const [newApproach, setNewApproach] = useState('');
+  const [newHint, setNewHint] = useState('');
+  const [newSolution, setNewSolution] = useState('');
+  const [newTimeSpent, setNewTimeSpent] = useState('');
+  const [newResults, setNewResults] = useState('');
+  const [newLink, setNewLink] = useState('');
+  // edit flow
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDifficulty, setEditDifficulty] = useState<'Easy'|'Medium'|'Hard'|'Other'>('Easy');
+  const [editDescription, setEditDescription] = useState('');
+  const [editTechnologies, setEditTechnologies] = useState('');
+  const [editApproach, setEditApproach] = useState('');
+  const [editHint, setEditHint] = useState('');
+  const [editSolution, setEditSolution] = useState('');
+  const [editTimeSpent, setEditTimeSpent] = useState('');
+  const [editResults, setEditResults] = useState('');
+  const [editLink, setEditLink] = useState('');
+  // delete confirmation
+  const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
+  // undo snackbar state
+  const [recentlyDeleted, setRecentlyDeleted] = useState<{ item: Challenge; index: number } | null>(null);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const undoTimeoutRef = React.useRef<number | null>(null as unknown as number | null);
 
   // load completed from localStorage
   useEffect(() => {
@@ -158,8 +207,59 @@ const LabChallengesSection: React.FC = () => {
               </select>
             </div>
 
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-sm text-slate-300">Add a new challenge</div>
+                <button onClick={() => setShowAddForm(s => !s)} className="text-sm px-2 py-1 bg-slate-700 rounded text-white">{showAddForm ? 'Cancel' : 'Add'}</button>
+              </div>
+
+              {showAddForm && (
+                <div className="bg-slate-900 p-3 rounded border border-slate-700">
+                  <input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Title" className="w-full mb-2 p-2 rounded bg-slate-800 text-white border border-slate-700" />
+                  <select value={newDifficulty} onChange={e => setNewDifficulty(e.target.value as 'Easy'|'Medium'|'Hard'|'Other')} className="w-full mb-2 p-2 rounded bg-slate-800 text-white border border-slate-700">
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  <textarea value={newDescription} onChange={e => setNewDescription(e.target.value)} placeholder="Short description" className="w-full mb-2 p-2 rounded bg-slate-800 text-white border border-slate-700" />
+                  <input value={newTechnologies} onChange={e => setNewTechnologies(e.target.value)} placeholder="Technologies (comma separated)" className="w-full mb-2 p-2 rounded bg-slate-800 text-white border border-slate-700" />
+                  <input value={newTimeSpent} onChange={e => setNewTimeSpent(e.target.value)} placeholder="Time spent (e.g. 6 hours)" className="w-full mb-2 p-2 rounded bg-slate-800 text-white border border-slate-700" />
+                  <textarea value={newApproach} onChange={e => setNewApproach(e.target.value)} placeholder="Approach (optional)" className="w-full mb-2 p-2 rounded bg-slate-800 text-white border border-slate-700" />
+                  <input value={newHint} onChange={e => setNewHint(e.target.value)} placeholder="Hint (optional)" className="w-full mb-2 p-2 rounded bg-slate-800 text-white border border-slate-700" />
+                  <textarea value={newSolution} onChange={e => setNewSolution(e.target.value)} placeholder="Solution (optional)" className="w-full mb-2 p-2 rounded bg-slate-800 text-white border border-slate-700" />
+                  <input value={newResults} onChange={e => setNewResults(e.target.value)} placeholder="Results (optional)" className="w-full mb-2 p-2 rounded bg-slate-800 text-white border border-slate-700" />
+                  <input value={newLink} onChange={e => setNewLink(e.target.value)} placeholder="External link (optional)" className="w-full mb-2 p-2 rounded bg-slate-800 text-white border border-slate-700" />
+                  <div className="flex gap-2">
+                    <button onClick={() => {
+                      // add
+                      if (!newTitle.trim()) return;
+                      const nextId = (challenges.reduce((max, c) => Math.max(max, c.id), 0) || 0) + 1;
+                      const newCh: Challenge = {
+                        id: nextId,
+                        title: newTitle.trim(),
+                        difficulty: newDifficulty,
+                        timeSpent: newTimeSpent || '0 hours',
+                        description: newDescription.trim(),
+                        approach: newApproach.trim(),
+                        hint: newHint.trim() || undefined,
+                        solution: newSolution.trim() || undefined,
+                        technologies: newTechnologies.split(',').map(s => s.trim()).filter(Boolean),
+                        complexity: '',
+                        results: newResults.trim(),
+                        link: newLink.trim() || undefined,
+                      } as Challenge;
+                      setChallenges(prev => [newCh, ...prev]);
+                      setNewTitle(''); setNewDescription(''); setNewTechnologies(''); setNewApproach(''); setNewHint(''); setNewSolution(''); setNewTimeSpent(''); setNewResults(''); setNewLink(''); setShowAddForm(false);
+                    }} className="px-3 py-1 bg-emerald-600 rounded text-white">Save</button>
+                    <button onClick={() => setShowAddForm(false)} className="px-3 py-1 bg-slate-700 rounded text-white">Cancel</button>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="space-y-4">
-              {filtered.map(challenge => (
+              {filtered.map((challenge, idx) => (
                 <div
                   key={challenge.id}
                   onClick={() => openDetails(challenge)}
@@ -182,13 +282,41 @@ const LabChallengesSection: React.FC = () => {
                         Open
                       </a>
                     ) : null}
+
                     <button
                       onClick={(e) => { e.stopPropagation(); setCompleted(prev => prev.includes(challenge.id) ? prev.filter(id => id !== challenge.id) : [...prev, challenge.id]); }}
-                      className={`ml-auto px-3 py-1 rounded text-sm ${completed.includes(challenge.id) ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-300'}`}
+                      className={`px-3 py-1 rounded text-sm ${completed.includes(challenge.id) ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-300'}`}
                     >
                       {completed.includes(challenge.id) ? 'Completed' : 'Mark'}
                     </button>
+
+                    <button onClick={(e) => { e.stopPropagation(); setEditingIndex(idx); setEditTitle(challenge.title); setEditDifficulty(challenge.difficulty as 'Easy'|'Medium'|'Hard'|'Other'); setEditDescription(challenge.description); setEditTechnologies(challenge.technologies.join(', ')); }} className="px-3 py-1 rounded text-sm bg-blue-600 text-white">Edit</button>
+                    <button onClick={(e) => { e.stopPropagation(); setDeleteIndex(idx); }} className="px-3 py-1 rounded text-sm bg-red-600 text-white">Delete</button>
                   </div>
+
+                  {editingIndex === idx && (
+                    <div className="mt-3 bg-slate-800 p-3 rounded">
+                      <input value={editTitle} onChange={e => setEditTitle(e.target.value)} className="w-full mb-2 p-2 rounded bg-slate-900 text-white border border-slate-700" />
+                      <select value={editDifficulty} onChange={e => setEditDifficulty(e.target.value as 'Easy'|'Medium'|'Hard'|'Other')} className="w-full mb-2 p-2 rounded bg-slate-900 text-white border border-slate-700">
+                        <option>Easy</option>
+                        <option>Medium</option>
+                        <option>Hard</option>
+                        <option>Other</option>
+                      </select>
+                      <textarea value={editDescription} onChange={e => setEditDescription(e.target.value)} className="w-full mb-2 p-2 rounded bg-slate-900 text-white border border-slate-700" />
+                      <input value={editTechnologies} onChange={e => setEditTechnologies(e.target.value)} placeholder="Techs (comma)" className="w-full mb-2 p-2 rounded bg-slate-900 text-white border border-slate-700" />
+                      <input value={editTimeSpent} onChange={e => setEditTimeSpent(e.target.value)} placeholder="Time spent" className="w-full mb-2 p-2 rounded bg-slate-900 text-white border border-slate-700" />
+                      <textarea value={editApproach} onChange={e => setEditApproach(e.target.value)} placeholder="Approach" className="w-full mb-2 p-2 rounded bg-slate-900 text-white border border-slate-700" />
+                      <input value={editHint} onChange={e => setEditHint(e.target.value)} placeholder="Hint" className="w-full mb-2 p-2 rounded bg-slate-900 text-white border border-slate-700" />
+                      <textarea value={editSolution} onChange={e => setEditSolution(e.target.value)} placeholder="Solution" className="w-full mb-2 p-2 rounded bg-slate-900 text-white border border-slate-700" />
+                      <input value={editResults} onChange={e => setEditResults(e.target.value)} placeholder="Results" className="w-full mb-2 p-2 rounded bg-slate-900 text-white border border-slate-700" />
+                      <input value={editLink} onChange={e => setEditLink(e.target.value)} placeholder="Link" className="w-full mb-2 p-2 rounded bg-slate-900 text-white border border-slate-700" />
+                      <div className="flex gap-2">
+                        <button onClick={(ev) => { ev.stopPropagation(); const updated: Challenge = { ...challenge, title: editTitle, difficulty: editDifficulty as 'Easy'|'Medium'|'Hard'|'Other', timeSpent: editTimeSpent || challenge.timeSpent, description: editDescription, approach: editApproach, hint: editHint || undefined, solution: editSolution || undefined, technologies: editTechnologies.split(',').map(s => s.trim()).filter(Boolean), results: editResults, link: editLink || undefined }; setChallenges(prev => { const c = [...prev]; c[idx] = updated; return c; }); setEditingIndex(null); }} className="px-3 py-1 bg-emerald-600 rounded text-white">Save</button>
+                        <button onClick={(ev) => { ev.stopPropagation(); setEditingIndex(null); }} className="px-3 py-1 bg-slate-700 rounded text-white">Cancel</button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -279,6 +407,60 @@ const LabChallengesSection: React.FC = () => {
           </div>
         </div>
 
+        {/* export / import controls */}
+        <div className="mt-6 flex items-center gap-2">
+          <button onClick={() => {
+            const blob = new Blob([JSON.stringify(challenges, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'lab-challenges.json';
+            a.click();
+            URL.revokeObjectURL(url);
+          }} className="px-3 py-2 bg-slate-700 text-white rounded">Export challenges</button>
+
+          <label className="px-3 py-2 bg-slate-700 text-white rounded cursor-pointer">
+            Import
+            <input type="file" accept="application/json" className="hidden" onChange={e => {
+              const f = e.target.files?.[0];
+              if (!f) return;
+              const reader = new FileReader();
+              reader.onload = () => {
+                try {
+                  const data = JSON.parse(String(reader.result || ''));
+                  if (Array.isArray(data)) {
+                    // basic validation
+                    const ok = data.every(d => d && typeof d.id === 'number' && typeof d.title === 'string');
+                    if (ok) {
+                      setChallenges(data as Challenge[]);
+                      setSnackbarVisible(true);
+                      setRecentlyDeleted(null);
+                      return;
+                    }
+                  }
+                  alert('Invalid file format');
+                } catch (err) {
+                  alert('Failed to parse file');
+                }
+              };
+              reader.readAsText(f);
+            }} />
+          </label>
+        </div>
+
+        {/* undo snackbar */}
+        {snackbarVisible && recentlyDeleted && (
+          <div className="fixed bottom-6 left-6 z-50 bg-slate-900 border border-slate-700 p-3 rounded shadow-lg flex items-center gap-4">
+            <div className="text-slate-200">"{recentlyDeleted.item.title}" deleted</div>
+            <button onClick={() => {
+              // restore
+              setChallenges(prev => { const c = [...prev]; c.splice(recentlyDeleted.index, 0, recentlyDeleted.item); return c; });
+              setSnackbarVisible(false);
+              setRecentlyDeleted(null);
+              if (undoTimeoutRef.current) { window.clearTimeout(undoTimeoutRef.current); undoTimeoutRef.current = null; }
+            }} className="px-2 py-1 bg-emerald-600 text-white rounded">Undo</button>
+          </div>
+        )}
         {/* Modal */}
         {isModalOpen && selectedChallenge && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
@@ -333,6 +515,31 @@ const LabChallengesSection: React.FC = () => {
                     Open Link
                   </a>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* delete confirmation modal */}
+        {deleteIndex !== null && (
+          <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50">
+            <div className="bg-slate-900 p-6 rounded border border-slate-700 w-full max-w-md">
+              <h3 className="text-lg font-bold text-white mb-2">Confirm delete</h3>
+              <p className="text-slate-300 mb-4">Are you sure you want to delete "{challenges[deleteIndex].title}"? This action cannot be undone.</p>
+              <div className="flex gap-2 justify-end">
+                <button onClick={() => setDeleteIndex(null)} className="px-3 py-1 bg-slate-700 rounded text-white">Cancel</button>
+                <button onClick={() => { 
+                    if (deleteIndex !== null) {
+                      const item = challenges[deleteIndex];
+                      setChallenges(prev => prev.filter((_, i) => i !== deleteIndex));
+                      setRecentlyDeleted({ item, index: deleteIndex });
+                      setSnackbarVisible(true);
+                      // auto-hide after 6s
+                      if (undoTimeoutRef.current) window.clearTimeout(undoTimeoutRef.current);
+                      undoTimeoutRef.current = window.setTimeout(() => { setSnackbarVisible(false); setRecentlyDeleted(null); }, 6000);
+                    }
+                    setDeleteIndex(null);
+                  }} className="px-3 py-1 bg-red-600 rounded text-white">Delete</button>
               </div>
             </div>
           </div>
